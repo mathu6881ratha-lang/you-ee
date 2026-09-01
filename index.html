@@ -1,0 +1,5091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LIFEOS — Life Operating System</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Inter, Arial, sans-serif;
+}
+
+:root {
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --text: #151722;
+    --muted: #777b87;
+    --border: #e6e7ec;
+    --primary: #635bff;
+    --primary-dark: #5148e5;
+    --soft: #efeeff;
+    --success: #22a06b;
+    --danger: #e5484d;
+    --warning: #f59e0b;
+}
+
+body.dark {
+    --bg: #0f1117;
+    --card: #181b23;
+    --text: #f4f4f5;
+    --muted: #9da1ad;
+    --border: #292d38;
+    --soft: #292650;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background .25s, color .25s;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* SIDEBAR */
+
+.sidebar {
+    width: 250px;
+    background: var(--card);
+    border-right: 1px solid var(--border);
+    padding: 25px 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 10px 35px;
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.logo-icon {
+    width: 38px;
+    height: 38px;
+    background: var(--primary);
+    color: white;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+}
+
+.nav {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.nav button {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 13px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.nav button:hover,
+.nav button.active {
+    background: var(--soft);
+    color: var(--primary);
+}
+
+.nav button.active {
+    font-weight: 700;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+}
+
+.user {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--soft);
+    color: var(--primary);
+    display: grid;
+    place-items: center;
+    font-weight: bold;
+}
+
+/* MAIN */
+
+.main {
+    flex: 1;
+    min-width: 0;
+}
+
+.topbar {
+    min-height: 80px;
+    padding: 15px 40px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.topbar h2 {
+    font-size: 20px;
+}
+
+.topbar p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.notification {
+    border: none;
+    background: var(--bg);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+}
+
+.content {
+    max-width: 1250px;
+    margin: auto;
+    padding: 40px;
+}
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+/* HERO */
+
+.eyebrow {
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+.hero h1 {
+    font-size: clamp(35px, 5vw, 58px);
+    max-width: 750px;
+    line-height: 1.05;
+    margin-top: 8px;
+    letter-spacing: -2px;
+}
+
+.hero h1 span {
+    color: var(--primary);
+}
+
+.hero p {
+    color: var(--muted);
+    margin-top: 15px;
+    font-size: 17px;
+}
+
+/* CARDS */
+
+.ai-box {
+    margin-top: 30px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 22px;
+    box-shadow: 0 12px 35px rgba(0,0,0,.05);
+}
+
+.ai-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.ai-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--soft);
+    color: var(--primary);
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+}
+
+.ai-title small {
+    color: var(--muted);
+    display: block;
+    margin-top: 3px;
+}
+
+textarea,
+input,
+select {
+    outline: none;
+}
+
+textarea {
+    width: 100%;
+    min-height: 130px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 14px;
+    resize: vertical;
+}
+
+input {
+    color: var(--text);
+}
+
+.primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    font-weight: 700;
+}
+
+.primary:hover {
+    background: var(--primary-dark);
+}
+
+.secondary {
+    border: none;
+    background: var(--soft);
+    color: var(--primary);
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.danger-btn {
+    border: none;
+    background: rgba(229,72,77,.1);
+    color: var(--danger);
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+/* AI */
+
+.ai-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-top: 14px;
+}
+
+.examples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.example,
+.calendar-view-buttons button,
+.calendar-controls button {
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted);
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+
+.ai-result {
+    margin-top: 18px;
+    padding: 18px;
+    background: var(--soft);
+    border-radius: 14px;
+    line-height: 1.6;
+}
+
+.ai-plan-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.ai-plan-stat {
+    background: var(--card);
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.ai-plan-item {
+    background: var(--card);
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 8px;
+}
+
+.ai-plan-item small {
+    display: block;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+/* AI AGENT */
+
+.agent-card {
+    margin-top: 30px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 12px 35px rgba(0,0,0,.05);
+}
+
+.agent-header {
+    padding: 22px;
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    border-bottom: 1px solid var(--border);
+}
+
+.agent-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--primary);
+    color: white;
+    display: grid;
+    place-items: center;
+    font-size: 22px;
+}
+
+.agent-header small {
+    display: block;
+    color: var(--muted);
+    margin-top: 3px;
+}
+
+.agent-body {
+    padding: 20px;
+}
+
+.lifestyle-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.lifestyle-field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    margin-bottom: 7px;
+}
+
+.lifestyle-field textarea {
+    min-height: 90px;
+}
+
+.lifestyle-full {
+    grid-column: 1 / -1;
+}
+
+.upload-box {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.upload-box p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 10px;
+}
+
+.upload-box input {
+    width: 100%;
+}
+
+.agent-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.agent-actions button {
+    flex: 1;
+}
+
+.chat-box {
+    margin-top: 22px;
+    border-top: 1px solid var(--border);
+    padding-top: 22px;
+}
+
+.chat-messages {
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 5px;
+}
+
+.chat-message {
+    max-width: 85%;
+    padding: 12px 15px;
+    border-radius: 15px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+}
+
+.chat-message.ai {
+    align-self: flex-start;
+    background: var(--soft);
+}
+
+.chat-message.user {
+    align-self: flex-end;
+    background: var(--primary);
+    color: white;
+}
+
+.chat-input-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.chat-input-row input {
+    flex: 1;
+    padding: 13px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--card);
+}
+
+/* STATS */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat,
+.goal,
+.task,
+.calendar-day,
+.week-column {
+    background: var(--card);
+    border: 1px solid var(--border);
+}
+
+.stat {
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.stat span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.stat strong {
+    display: block;
+    font-size: 28px;
+    margin-top: 5px;
+}
+
+/* TASKS */
+
+.section-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 35px 0 15px;
+}
+
+.section-title p {
+    color: var(--muted);
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.tasks {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.task {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 17px 20px;
+    border-width: 0 0 1px;
+    transition: background .2s;
+}
+
+.task:hover {
+    background: var(--soft);
+}
+
+.task:last-child {
+    border-bottom: none;
+}
+
+.task input {
+    width: 20px;
+    height: 20px;
+}
+
+.task-info {
+    flex: 1;
+}
+
+.task-info strong {
+    display: block;
+}
+
+.task-info small {
+    color: var(--muted);
+    display: block;
+    margin-top: 3px;
+}
+
+.completed strong {
+    text-decoration: line-through;
+    color: var(--muted);
+}
+
+.priority {
+    color: var(--danger);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* GOALS */
+
+.goal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+}
+
+.goal {
+    border-radius: 18px;
+    padding: 22px;
+}
+
+.goal p {
+    color: var(--muted);
+    margin-top: 7px;
+    font-size: 13px;
+}
+
+.progress {
+    height: 8px;
+    background: var(--bg);
+    border-radius: 20px;
+    margin-top: 20px;
+    overflow: hidden;
+}
+
+.progress div {
+    height: 100%;
+    background: var(--primary);
+    transition: width .3s;
+}
+
+.goal-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+
+.goal-actions button {
+    flex: 1;
+}
+
+/* MODALS */
+
+.modal,
+.task-details-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    z-index: 100;
+}
+
+.modal-box,
+.task-details-box {
+    width: min(500px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--card);
+    color: var(--text);
+    border-radius: 20px;
+    padding: 30px;
+    position: relative;
+}
+
+.modal-box input,
+.modal-box textarea,
+.modal-box select {
+    width: 100%;
+    margin: 15px 0;
+    padding: 13px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text);
+    border-radius: 10px;
+}
+
+.close,
+.task-details-close {
+    position: absolute;
+    top: 15px;
+    right: 18px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 25px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.modal-actions button {
+    flex: 1;
+}
+
+.task-detail-row {
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.task-details-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.task-details-actions button {
+    flex: 1;
+}
+
+/* CALENDAR */
+
+.calendar-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 25px 0 15px;
+    flex-wrap: wrap;
+}
+
+.calendar-view-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.calendar-day-name {
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    color: var(--muted);
+}
+
+.calendar-day {
+    min-height: 100px;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.calendar-day-number {
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.calendar-event {
+    padding: 6px;
+    margin-top: 5px;
+    border-radius: 7px;
+    font-size: 12px;
+    cursor: pointer;
+    background: var(--primary);
+    color: white;
+}
+
+.calendar-empty {
+    opacity: .35;
+}
+
+.calendar-real-week-grid {
+    display: grid;
+    grid-template-columns: 60px repeat(7, minmax(120px, 1fr));
+    gap: 0;
+    overflow-x: auto;
+}
+
+.week-time-column,
+.week-column {
+    background: var(--card);
+}
+
+.week-time-header,
+.week-day-header {
+    height: 55px;
+    border-bottom: 1px solid var(--border);
+}
+
+.week-time-label {
+    height: 60px;
+    padding: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+}
+
+.week-day-header {
+    text-align: center;
+    padding: 8px;
+    font-weight: 600;
+}
+
+.week-day-header strong {
+    display: block;
+    font-size: 20px;
+}
+
+.week-hour {
+    height: 60px;
+    border-bottom: 1px solid var(--border);
+    padding: 2px;
+    position: relative;
+}
+
+.week-event {
+    position: relative;
+    z-index: 2;
+}
+
+.calendar-day-grid {
+    display: block;
+}
+
+.calendar-hour {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    min-height: 60px;
+    border-bottom: 1px solid var(--border);
+}
+
+.calendar-hour-time {
+    padding: 12px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.calendar-hour-content {
+    padding: 6px;
+    border-left: 1px solid var(--border);
+}
+
+/* LOADING */
+
+.loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.spinner {
+    width: 15px;
+    height: 15px;
+    border: 2px solid rgba(255,255,255,.4);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* MOBILE */
+
+@media(max-width:900px) {
+    .sidebar {
+        width: 75px;
+    }
+
+    .logo span,
+    .nav button span,
+    .user-info {
+        display: none;
+    }
+
+    .nav button {
+        text-align: center;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .goal-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media(max-width:700px) {
+    .lifestyle-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lifestyle-full {
+        grid-column: auto;
+    }
+}
+
+@media(max-width:600px) {
+    .content {
+        padding: 25px 15px;
+    }
+
+    .topbar {
+        padding: 0 15px;
+    }
+
+    .stats,
+    .goal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ai-bottom {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .primary {
+        width: 100%;
+    }
+
+    .hero h1 {
+        font-size: 38px;
+    }
+
+    .agent-actions {
+        flex-direction: column;
+    }
+
+    .chat-input-row {
+        flex-direction: column;
+    }
+
+    .calendar-controls {
+        justify-content: flex-start;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+
+<aside class="sidebar">
+
+    <div class="logo">
+        <div class="logo-icon">L</div>
+        <span>LIFEOS</span>
+    </div>
+
+    <nav class="nav">
+
+        <button class="active" data-page="dashboard">
+            🏠 <span>Dashboard</span>
+        </button>
+
+        <button data-page="tasks">
+            ✓ <span>Tasks</span>
+        </button>
+
+        <button data-page="goals">
+            🎯 <span>Goals</span>
+        </button>
+
+        <button data-page="calendar">
+            📅 <span>Calendar</span>
+        </button>
+
+        <button data-page="progress">
+            📊 <span>Progress</span>
+        </button>
+
+        <button data-page="agent">
+            🤖 <span>AI Agent</span>
+        </button>
+
+    </nav>
+
+    <div class="sidebar-bottom">
+
+        <button class="secondary" id="darkMode" style="width:100%">
+            🌙 Dark Mode
+        </button>
+
+        <div class="user">
+            <div class="avatar">U</div>
+
+            <div class="user-info">
+                <strong>User</strong>
+                <small>Free Plan</small>
+            </div>
+        </div>
+
+    </div>
+
+</aside>
+
+
+<!-- MAIN -->
+
+<main class="main">
+
+<header class="topbar">
+
+    <div>
+        <h2 id="pageTitle">Dashboard</h2>
+        <p id="date"></p>
+    </div>
+
+    <button class="notification">
+        🔔
+    </button>
+
+</header>
+
+
+<div class="content">
+
+<!-- =====================================================
+     DASHBOARD
+===================================================== -->
+
+<section class="page active" id="dashboard">
+
+    <div class="hero">
+
+        <span class="eyebrow">
+            YOUR PERSONAL LIFE OPERATING SYSTEM
+        </span>
+
+        <h1>
+            What do you want to
+            <span>accomplish?</span>
+        </h1>
+
+        <p>
+            Tell LIFEOS what you want. We'll help organize it into a plan.
+        </p>
+
+    </div>
+
+
+    <!-- QUICK AI -->
+
+    <div class="ai-box">
+
+        <div class="ai-title">
+
+            <div class="ai-icon">
+                ✦
+            </div>
+
+            <div>
+                <strong>LIFEOS AI</strong>
+                <small>Your personal planning assistant</small>
+            </div>
+
+        </div>
+
+
+        <textarea
+            id="aiInput"
+            placeholder="Example: I have an exam in 10 days. Help me create a study plan."
+        ></textarea>
+
+
+        <div class="ai-bottom">
+
+            <div class="examples">
+
+                <button class="example" data-text="Plan my day">
+                    📅 Plan my day
+                </button>
+
+                <button class="example" data-text="Help me get healthier">
+                    ❤️ Health
+                </button>
+
+                <button class="example" data-text="Create a study plan">
+                    📚 Study
+                </button>
+
+                <button class="example" data-text="Help me become more productive">
+                    ⚡ Productivity
+                </button>
+
+            </div>
+
+            <button class="primary" id="createPlan">
+                Create Plan →
+            </button>
+
+        </div>
+
+        <div id="aiResult" class="ai-result hidden"></div>
+
+    </div>
+
+
+    <!-- STATS -->
+
+    <div class="stats">
+
+        <div class="stat">
+            <span>Active Goals</span>
+            <strong id="goalCount">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>Completed Tasks</span>
+            <strong id="completedCount">0</strong>
+        </div>
+
+        <div class="stat">
+            <span>Completion Rate</span>
+            <strong id="completionRate">0%</strong>
+        </div>
+
+        <div class="stat">
+            <span>Current Streak</span>
+            <strong id="streak">0 days</strong>
+        </div>
+
+    </div>
+
+
+    <!-- TASKS -->
+
+    <div class="section-title">
+
+        <div>
+            <h2>Today's Tasks</h2>
+            <p>Focus on what matters.</p>
+        </div>
+
+        <button class="secondary" id="addTask">
+            + Add Task
+        </button>
+
+    </div>
+
+    <div class="tasks" id="taskList"></div>
+
+</section>
+
+
+<!-- =====================================================
+     TASKS
+===================================================== -->
+
+<section class="page" id="tasks">
+
+    <h1>Tasks</h1>
+
+    <p style="color:var(--muted);margin-top:8px">
+        Manage your tasks.
+    </p>
+
+    <div
+        class="tasks"
+        id="allTasks"
+        style="margin-top:25px"
+    ></div>
+
+</section>
+
+
+<!-- =====================================================
+     GOALS
+===================================================== -->
+
+<section class="page" id="goals">
+
+    <div class="section-title">
+
+        <div>
+            <h1>Goals</h1>
+
+            <p>
+                Turn your ambitions into plans.
+            </p>
+        </div>
+
+        <button class="primary" id="addGoal">
+            + Add Goal
+        </button>
+
+    </div>
+
+    <div class="goal-grid" id="goalList"></div>
+
+</section>
+
+
+<!-- =====================================================
+     CALENDAR
+===================================================== -->
+
+<section class="page" id="calendar">
+
+    <h1>Calendar</h1>
+
+    <p style="color:var(--muted);margin-top:8px">
+        Organize your time.
+    </p>
+
+    <div class="calendar-controls">
+
+        <div class="calendar-view-buttons">
+
+            <button id="monthView">
+                Month
+            </button>
+
+            <button id="weekView">
+                Week
+            </button>
+
+            <button id="dayView">
+                Day
+            </button>
+
+        </div>
+
+        <button id="prevMonth">
+            ←
+        </button>
+
+        <button id="todayButton">
+            Today
+        </button>
+
+        <h2 id="calendarMonth"></h2>
+
+        <button id="nextMonth">
+            →
+        </button>
+
+    </div>
+
+    <div id="calendarGrid" class="calendar-grid"></div>
+
+</section>
+
+
+<!-- =====================================================
+     PROGRESS
+===================================================== -->
+
+<section class="page" id="progress">
+
+    <h1>Your Progress</h1>
+
+    <p style="color:var(--muted);margin-top:8px">
+        Track your improvement.
+    </p>
+
+    <div class="ai-box" style="margin-top:25px">
+
+        <h2>Overall completion</h2>
+
+        <div class="progress">
+            <div id="progressBar" style="width:0%"></div>
+        </div>
+
+        <strong
+            id="progressText"
+            style="display:block;margin-top:10px"
+        >
+            0%
+        </strong>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     AI AGENT
+===================================================== -->
+
+<section class="page" id="agent">
+
+    <div class="hero">
+
+        <span class="eyebrow">
+            YOUR PERSONAL AI LIFE AGENT
+        </span>
+
+        <h1>
+            Let AI understand
+            <span>your life.</span>
+        </h1>
+
+        <p>
+            Tell LIFEOS about your lifestyle, schedule and goals.
+            Your AI Agent will turn it into a practical plan.
+        </p>
+
+    </div>
+
+
+    <div class="agent-card">
+
+        <div class="agent-header">
+
+            <div class="agent-avatar">
+                🤖
+            </div>
+
+            <div>
+                <strong>LIFEOS AI Agent</strong>
+
+                <small>
+                    Your personal planning intelligence
+                </small>
+            </div>
+
+        </div>
+
+
+        <div class="agent-body">
+
+            <h3>
+                🧠 Tell your AI Agent about you
+            </h3>
+
+            <p
+                style="
+                    color:var(--muted);
+                    margin-top:6px;
+                    margin-bottom:20px;
+                "
+            >
+                The more information you provide, the more personalized
+                your plan can become.
+            </p>
+
+
+            <div class="lifestyle-grid">
+
+                <div class="lifestyle-field">
+
+                    <label>
+                        YOUR ROUTINE
+                    </label>
+
+                    <textarea
+                        id="lifestyleRoutine"
+                        placeholder="Example: I wake up at 7 AM, university starts at 9 AM, I usually get home at 5 PM..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="lifestyle-field">
+
+                    <label>
+                        YOUR GOALS
+                    </label>
+
+                    <textarea
+                        id="lifestyleGoals"
+                        placeholder="Example: I want better grades, become fitter, build my business..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="lifestyle-field">
+
+                    <label>
+                        YOUR HABITS
+                    </label>
+
+                    <textarea
+                        id="lifestyleHabits"
+                        placeholder="Example: I exercise twice a week, sleep around midnight..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="lifestyle-field">
+
+                    <label>
+                        YOUR COMMITMENTS
+                    </label>
+
+                    <textarea
+                        id="lifestyleCommitments"
+                        placeholder="Example: University Monday-Friday, work Saturday..."
+                    ></textarea>
+
+                </div>
+
+
+                <div class="lifestyle-field lifestyle-full">
+
+                    <label>
+                        ANYTHING ELSE
+                    </label>
+
+                    <textarea
+                        id="lifestyleOther"
+                        placeholder="Tell LIFEOS anything else it should know when planning your life."
+                    ></textarea>
+
+                </div>
+
+            </div>
+
+
+            <!-- UPLOAD -->
+
+            <div class="upload-box">
+
+                <p>
+                    📄 You can also upload a lifestyle/profile file
+                    (.txt, .md or .json)
+                </p>
+
+                <input
+                    type="file"
+                    id="lifestyleFile"
+                    accept=".txt,.md,.json,text/plain,application/json"
+                >
+
+                <div
+                    id="fileStatus"
+                    style="
+                        color:var(--primary);
+                        font-size:13px;
+                        margin-top:10px;
+                    "
+                ></div>
+
+            </div>
+
+
+            <div class="agent-actions">
+
+                <button
+                    class="secondary"
+                    id="saveLifestyle"
+                >
+                    💾 Save Lifestyle
+                </button>
+
+                <button
+                    class="secondary"
+                    id="clearLifestyle"
+                >
+                    🗑️ Clear
+                </button>
+
+                <button
+                    class="primary"
+                    id="generateLifestylePlan"
+                >
+                    ✦ Build My Life Plan
+                </button>
+
+            </div>
+
+
+            <!-- PLAN RESULT -->
+
+            <div
+                id="agentPlanResult"
+                class="ai-result hidden"
+            ></div>
+
+
+            <!-- CHAT -->
+
+            <div class="chat-box">
+
+                <h3>
+                    💬 Talk to your AI Agent
+                </h3>
+
+                <p
+                    style="
+                        color:var(--muted);
+                        margin:6px 0 15px;
+                    "
+                >
+                    Ask questions or tell your agent to change your plan.
+                </p>
+
+
+                <div
+                    class="chat-messages"
+                    id="chatMessages"
+                >
+
+                    <div class="chat-message ai">
+                        Hi! I'm your LIFEOS AI Agent. Tell me about your
+                        life or ask me what you should focus on today.
+                    </div>
+
+                </div>
+
+
+                <div class="chat-input-row">
+
+                    <input
+                        id="agentChatInput"
+                        placeholder="Ask your AI Agent something..."
+                    >
+
+                    <button
+                        class="primary"
+                        id="sendAgentMessage"
+                    >
+                        Send
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</div>
+</main>
+</div>
+
+
+<!-- =====================================================
+     TASK MODAL
+===================================================== -->
+
+<div class="modal hidden" id="modal">
+
+    <div class="modal-box">
+
+        <button class="close" id="closeModal">
+            ×
+        </button>
+
+        <h2 id="taskModalTitle">
+            Add a Task
+        </h2>
+
+        <p
+            style="
+                color:var(--muted);
+                margin-top:6px;
+            "
+        >
+            Create or edit a task.
+        </p>
+
+        <input
+            id="taskInput"
+            placeholder="Task title"
+        >
+
+        <input
+            id="taskDate"
+            type="date"
+        >
+
+        <input
+            id="taskTime"
+            type="time"
+        >
+
+        <select id="taskPriority">
+
+            <option>HIGH</option>
+            <option selected>MEDIUM</option>
+            <option>LOW</option>
+
+        </select>
+
+        <textarea
+            id="taskDescription"
+            placeholder="Description"
+        ></textarea>
+
+        <div class="modal-actions">
+
+            <button
+                class="secondary"
+                id="cancelTaskModal"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="primary"
+                id="saveTask"
+            >
+                Save Task
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     GOAL MODAL
+===================================================== -->
+
+<div class="modal hidden" id="goalModal">
+
+    <div class="modal-box">
+
+        <button class="close" id="closeGoalModal">
+            ×
+        </button>
+
+        <h2 id="goalModalTitle">
+            Add a Goal
+        </h2>
+
+        <input
+            id="goalTitle"
+            placeholder="Goal title"
+        >
+
+        <textarea
+            id="goalDescription"
+            placeholder="Goal description"
+        ></textarea>
+
+        <label>
+            Progress:
+            <strong id="goalProgressValue">
+                0%
+            </strong>
+        </label>
+
+        <input
+            id="goalProgress"
+            type="range"
+            min="0"
+            max="100"
+            value="0"
+            style="width:100%;margin:15px 0"
+        >
+
+        <div class="modal-actions">
+
+            <button
+                class="secondary"
+                id="cancelGoalModal"
+            >
+                Cancel
+            </button>
+
+            <button
+                class="primary"
+                id="saveGoal"
+            >
+                Save Goal
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     TASK DETAILS
+===================================================== -->
+
+<div
+    id="taskDetailsModal"
+    class="task-details-modal hidden"
+>
+
+    <div class="task-details-box">
+
+        <button
+            id="closeTaskDetails"
+            class="task-details-close"
+        >
+            ×
+        </button>
+
+        <h2 id="detailsTaskTitle"></h2>
+
+        <div id="detailsTaskContent"></div>
+
+        <div class="task-details-actions">
+
+            <button
+                class="secondary"
+                id="completeTaskButton"
+            >
+                ☑️ Complete
+            </button>
+
+            <button
+                class="secondary"
+                id="editTaskButton"
+            >
+                ✏️ Edit
+            </button>
+
+            <button
+                class="danger-btn"
+                id="deleteTaskButton"
+            >
+                🗑️ Delete
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+"use strict";
+
+/* =========================================================
+   CONFIGURATION
+========================================================= */
+
+const API_URL =
+    "https://life-os-76az.onrender.com/ask";
+
+
+/* =========================================================
+   STORAGE
+========================================================= */
+
+let tasks =
+    JSON.parse(
+        localStorage.getItem("lifeos_tasks") || "null"
+    ) || [
+
+        {
+            id: 1,
+            title: "Plan your day",
+            description: "Choose your most important priorities.",
+            priority: "HIGH",
+            date: "",
+            time: "",
+            completed: false
+        },
+
+        {
+            id: 2,
+            title: "Choose your main goal",
+            description: "Focus on one important outcome.",
+            priority: "MEDIUM",
+            date: "",
+            time: "",
+            completed: false
+        },
+
+        {
+            id: 3,
+            title: "Complete one important task",
+            description: "Make progress toward your goal.",
+            priority: "MEDIUM",
+            date: "",
+            time: "",
+            completed: false
+        }
+    ];
+
+
+let goals =
+    JSON.parse(
+        localStorage.getItem("lifeos_goals") || "null"
+    ) || [];
+
+
+let lifestyle =
+    JSON.parse(
+        localStorage.getItem("lifeos_lifestyle") || "null"
+    ) || {
+
+        routine: "",
+        goals: "",
+        habits: "",
+        commitments: "",
+        other: "",
+        uploadedFile: ""
+    };
+
+
+let editingTaskId = null;
+let editingGoalIndex = null;
+
+let calendarDate = new Date();
+
+let calendarView = "month";
+
+let selectedTask = null;
+
+
+/* =========================================================
+   HELPER
+========================================================= */
+
+const $ = id =>
+    document.getElementById(id);
+
+
+function escapeHTML(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        String(value ?? "");
+
+    return div.innerHTML;
+}
+
+
+function save() {
+
+    localStorage.setItem(
+        "lifeos_tasks",
+        JSON.stringify(tasks)
+    );
+
+    localStorage.setItem(
+        "lifeos_goals",
+        JSON.stringify(goals)
+    );
+}
+
+
+function showResult(message) {
+
+    $("aiResult")
+        .classList
+        .remove("hidden");
+
+    $("aiResult").innerHTML =
+        message;
+}
+
+
+function formatDate(date) {
+
+    return (
+        date.getFullYear() +
+        "-" +
+        String(
+            date.getMonth() + 1
+        ).padStart(2, "0") +
+        "-" +
+        String(
+            date.getDate()
+        ).padStart(2, "0")
+    );
+}
+
+
+function dateKey(date) {
+
+    return formatDate(date);
+}
+
+
+function normalizePriority(priority) {
+
+    const value =
+        String(
+            priority || "MEDIUM"
+        ).toUpperCase();
+
+    if (
+        value === "HIGH" ||
+        value === "MEDIUM" ||
+        value === "LOW"
+    ) {
+        return value;
+    }
+
+    return "MEDIUM";
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+$("date").textContent =
+    new Date().toLocaleDateString(
+        undefined,
+        {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        }
+    );
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+document
+    .querySelectorAll(
+        ".nav button[data-page]"
+    )
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const page =
+                    button.dataset.page;
+
+                document
+                    .querySelectorAll(".page")
+                    .forEach(section =>
+                        section.classList
+                            .remove("active")
+                    );
+
+                $(page)
+                    .classList
+                    .add("active");
+
+                document
+                    .querySelectorAll(".nav button")
+                    .forEach(btn =>
+                        btn.classList
+                            .remove("active")
+                    );
+
+                button.classList.add("active");
+
+                const titles = {
+
+                    dashboard: "Dashboard",
+                    tasks: "Tasks",
+                    goals: "Goals",
+                    calendar: "Calendar",
+                    progress: "Progress",
+                    agent: "AI Agent"
+                };
+
+                $("pageTitle").textContent =
+                    titles[page] ||
+                    "LIFEOS";
+            }
+        );
+    });
+
+
+/* =========================================================
+   AI EXAMPLES
+========================================================= */
+
+document
+    .querySelectorAll(".example")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                $("aiInput").value =
+                    button.dataset.text;
+
+                $("aiInput").focus();
+            }
+        );
+    });
+
+
+/* =========================================================
+   AI RESPONSE REQUEST
+========================================================= */
+
+async function askAI(message) {
+
+    const response =
+        await fetch(
+            API_URL,
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json"
+                },
+
+                body: JSON.stringify({
+                    message
+                })
+            }
+        );
+
+
+    let data = null;
+
+    try {
+
+        data =
+            await response.json();
+
+    } catch {
+
+        throw new Error(
+            "The AI server returned an invalid response."
+        );
+    }
+
+
+    if (!response.ok) {
+
+        throw new Error(
+            data?.error ||
+            "AI request failed."
+        );
+    }
+
+
+    return data;
+}
+
+
+/* =========================================================
+   EXTRACT PLAN
+========================================================= */
+
+function extractPlan(data) {
+
+    if (!data) {
+        return null;
+    }
+
+    if (
+        data.plan &&
+        typeof data.plan === "object"
+    ) {
+        return data.plan;
+    }
+
+    if (
+        data.data?.plan &&
+        typeof data.data.plan === "object"
+    ) {
+        return data.data.plan;
+    }
+
+    return null;
+}
+
+
+/* =========================================================
+   AI PLAN
+========================================================= */
+
+async function createPlan() {
+
+    const input =
+        $("aiInput")
+            .value
+            .trim();
+
+    if (!input) {
+
+        showResult(
+            "Please type something first."
+        );
+
+        return;
+    }
+
+
+    const button =
+        $("createPlan");
+
+    button.disabled = true;
+
+    button.innerHTML = `
+        <span class="loading">
+            <span class="spinner"></span>
+            Planning...
+        </span>
+    `;
+
+
+    try {
+
+        const data =
+            await askAI(input);
+
+        const plan =
+            extractPlan(data);
+
+
+        if (!plan) {
+
+            const fallback =
+                data?.response ||
+                data?.message ||
+                "The AI responded, but did not return a structured plan.";
+
+            showResult(
+                `<strong>LIFEOS AI</strong><br><br>
+                ${escapeHTML(fallback)}`
+            );
+
+            return;
+        }
+
+
+        const scheduledTasks =
+            addPlanToLIFEOS(plan);
+
+
+        showPlanResult(
+            "aiResult",
+            plan,
+            scheduledTasks
+        );
+
+
+        $("aiInput").value = "";
+
+
+    } catch (error) {
+
+        console.error(
+            "LIFEOS AI ERROR:",
+            error
+        );
+
+        showResult(`
+            <strong>❌ AI connection failed</strong>
+            <br><br>
+            ${escapeHTML(error.message)}
+            <br><br>
+            Check that your Render backend is running.
+        `);
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "Create Plan →";
+    }
+}
+
+
+$("createPlan")
+    .addEventListener(
+        "click",
+        createPlan
+    );
+
+
+/* =========================================================
+   ADD AI PLAN TO APP
+========================================================= */
+
+function addPlanToLIFEOS(plan) {
+
+    let scheduledTasks = [];
+
+
+    if (
+        Array.isArray(plan.tasks)
+    ) {
+
+        scheduledTasks =
+            smartScheduleTasks(
+                plan.tasks
+            );
+
+
+        scheduledTasks.forEach(
+            task => {
+
+                tasks.push({
+
+                    id:
+                        Date.now() +
+                        Math.random(),
+
+                    title:
+                        task.title ||
+                        "Untitled Task",
+
+                    description:
+                        task.description ||
+                        "AI planned task.",
+
+                    priority:
+                        normalizePriority(
+                            task.priority
+                        ),
+
+                    date:
+                        task.date ||
+                        "",
+
+                    time:
+                        task.time ||
+                        "",
+
+                    completed: false
+                });
+            }
+        );
+    }
+
+
+    if (
+        Array.isArray(plan.goals)
+    ) {
+
+        plan.goals.forEach(
+            goal => {
+
+                goals.push({
+
+                    id:
+                        Date.now() +
+                        Math.random(),
+
+                    title:
+                        goal.title ||
+                        "New Goal",
+
+                    description:
+                        goal.description ||
+                        "",
+
+                    progress:
+                        Math.max(
+                            0,
+                            Math.min(
+                                100,
+                                Number(
+                                    goal.progress
+                                ) || 0
+                            )
+                        )
+                });
+            }
+        );
+    }
+
+
+    save();
+
+    render();
+
+    return scheduledTasks;
+}
+
+
+/* =========================================================
+   SHOW AI PLAN
+========================================================= */
+
+function showPlanResult(
+    containerId,
+    plan,
+    scheduledTasks
+) {
+
+    const container =
+        $(containerId);
+
+    if (!container) {
+        return;
+    }
+
+
+    container.classList.remove(
+        "hidden"
+    );
+
+
+    container.innerHTML = `
+
+        <div class="ai-plan">
+
+            <h2>
+                ${escapeHTML(
+                    plan.title ||
+                    "Your Smart Plan"
+                )}
+            </h2>
+
+            <p>
+                ${escapeHTML(
+                    plan.summary ||
+                    "LIFEOS created a personalized plan for you."
+                )}
+            </p>
+
+
+            <div class="ai-plan-stats">
+
+                <div class="ai-plan-stat">
+                    📋 ${scheduledTasks.length} tasks
+                </div>
+
+                <div class="ai-plan-stat">
+                    🎯 ${
+                        Array.isArray(plan.goals)
+                        ? plan.goals.length
+                        : 0
+                    } goals
+                </div>
+
+                <div class="ai-plan-stat">
+                    🧠 AI planned
+                </div>
+
+            </div>
+
+
+            <h3>
+                📅 Your Schedule
+            </h3>
+
+
+            ${
+                scheduledTasks.length
+                ?
+
+                scheduledTasks
+                    .map(
+                        task => `
+
+                            <div class="ai-plan-item">
+
+                                <strong>
+                                    ${escapeHTML(
+                                        task.title ||
+                                        "Task"
+                                    )}
+                                </strong>
+
+                                <small>
+
+                                    📅 ${
+                                        escapeHTML(
+                                            task.date ||
+                                            "No date"
+                                        )
+                                    }
+
+                                    &nbsp;
+
+                                    ⏰ ${
+                                        escapeHTML(
+                                            task.time ||
+                                            "No time"
+                                        )
+                                    }
+
+                                    &nbsp;
+
+                                    ${escapeHTML(
+                                        normalizePriority(
+                                            task.priority
+                                        )
+                                    )}
+
+                                </small>
+
+                            </div>
+
+                        `
+                    )
+                    .join("")
+
+                :
+
+                "<p>No tasks were created.</p>"
+            }
+
+        </div>
+    `;
+}
+
+
+/* =========================================================
+   SMART SCHEDULER
+========================================================= */
+
+function smartScheduleTasks(
+    aiTasks
+) {
+
+    const scheduled = [];
+
+    const startDate =
+        new Date();
+
+    startDate.setHours(
+        0,
+        0,
+        0,
+        0
+    );
+
+
+    const startHour = 8;
+    const endHour = 21;
+
+
+    aiTasks.forEach(
+        (originalTask, index) => {
+
+            const task = {
+                ...originalTask
+            };
+
+
+            let requestedDate =
+                new Date(startDate);
+
+
+            if (
+                task.date &&
+                /^\d{4}-\d{2}-\d{2}$/
+                    .test(task.date)
+            ) {
+
+                const parsed =
+                    new Date(
+                        task.date +
+                        "T00:00:00"
+                    );
+
+                if (
+                    !isNaN(
+                        parsed.getTime()
+                    )
+                ) {
+
+                    requestedDate =
+                        parsed;
+                }
+            }
+
+
+            let hour = null;
+            let minute = 0;
+
+
+            if (
+                task.time &&
+                /^\d{2}:\d{2}$/
+                    .test(task.time)
+            ) {
+
+                hour =
+                    parseInt(
+                        task.time
+                            .split(":")[0],
+                        10
+                    );
+
+                minute =
+                    parseInt(
+                        task.time
+                            .split(":")[1],
+                        10
+                    );
+            }
+
+
+            if (
+                hour === null ||
+                hour < startHour ||
+                hour >= endHour
+            ) {
+
+                hour =
+                    startHour +
+                    (
+                        index %
+                        (
+                            endHour -
+                            startHour
+                        )
+                    );
+
+                minute = 0;
+            }
+
+
+            let foundSlot = false;
+
+
+            for (
+                let dayOffset = 0;
+                dayOffset < 60;
+                dayOffset++
+            ) {
+
+                const candidateDate =
+                    new Date(
+                        requestedDate
+                    );
+
+
+                if (
+                    dayOffset > 0
+                ) {
+
+                    candidateDate.setDate(
+                        candidateDate.getDate() +
+                        dayOffset
+                    );
+                }
+
+
+                const dateString =
+                    formatDate(
+                        candidateDate
+                    );
+
+
+                for (
+                    let candidateHour =
+                        hour;
+
+                    candidateHour <
+                    endHour;
+
+                    candidateHour++
+                ) {
+
+                    const timeString =
+                        String(
+                            candidateHour
+                        ).padStart(2, "0") +
+                        ":" +
+                        String(
+                            minute
+                        ).padStart(2, "0");
+
+
+                    const alreadyUsed =
+                        tasks.some(
+                            existingTask =>
+                                existingTask.date ===
+                                    dateString &&
+                                existingTask.time ===
+                                    timeString
+                        );
+
+
+                    const scheduledUsed =
+                        scheduled.some(
+                            existingTask =>
+                                existingTask.date ===
+                                    dateString &&
+                                existingTask.time ===
+                                    timeString
+                        );
+
+
+                    if (
+                        !alreadyUsed &&
+                        !scheduledUsed
+                    ) {
+
+                        task.date =
+                            dateString;
+
+                        task.time =
+                            timeString;
+
+                        scheduled.push(
+                            task
+                        );
+
+                        foundSlot = true;
+
+                        break;
+                    }
+                }
+
+
+                if (
+                    foundSlot
+                ) {
+                    break;
+                }
+            }
+
+
+            if (
+                !foundSlot
+            ) {
+
+                const fallbackDate =
+                    new Date(
+                        startDate
+                    );
+
+                fallbackDate.setDate(
+                    fallbackDate.getDate() +
+                    index
+                );
+
+                task.date =
+                    formatDate(
+                        fallbackDate
+                    );
+
+                task.time =
+                    "08:00";
+
+                scheduled.push(
+                    task
+                );
+            }
+        }
+    );
+
+
+    return scheduled;
+}
+
+
+/* =========================================================
+   AI AGENT — LIFESTYLE
+========================================================= */
+
+function collectLifestyle() {
+
+    return {
+
+        routine:
+            $("lifestyleRoutine")
+                .value
+                .trim(),
+
+        goals:
+            $("lifestyleGoals")
+                .value
+                .trim(),
+
+        habits:
+            $("lifestyleHabits")
+                .value
+                .trim(),
+
+        commitments:
+            $("lifestyleCommitments")
+                .value
+                .trim(),
+
+        other:
+            $("lifestyleOther")
+                .value
+                .trim(),
+
+        uploadedFile:
+            lifestyle.uploadedFile ||
+            ""
+    };
+}
+
+
+/* =========================================================
+   SAVE LIFESTYLE
+========================================================= */
+
+$("saveLifestyle")
+    .addEventListener(
+        "click",
+        () => {
+
+            lifestyle =
+                collectLifestyle();
+
+            localStorage.setItem(
+                "lifeos_lifestyle",
+                JSON.stringify(
+                    lifestyle
+                )
+            );
+
+
+            $("fileStatus")
+                .textContent =
+                "✓ Lifestyle saved locally.";
+
+        }
+    );
+
+
+/* =========================================================
+   LOAD LIFESTYLE
+========================================================= */
+
+function loadLifestyle() {
+
+    $("lifestyleRoutine").value =
+        lifestyle.routine || "";
+
+    $("lifestyleGoals").value =
+        lifestyle.goals || "";
+
+    $("lifestyleHabits").value =
+        lifestyle.habits || "";
+
+    $("lifestyleCommitments").value =
+        lifestyle.commitments || "";
+
+    $("lifestyleOther").value =
+        lifestyle.other || "";
+}
+
+
+loadLifestyle();
+
+
+/* =========================================================
+   CLEAR LIFESTYLE
+========================================================= */
+
+$("clearLifestyle")
+    .addEventListener(
+        "click",
+        () => {
+
+            const confirmed =
+                confirm(
+                    "Clear your saved lifestyle information?"
+                );
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            lifestyle = {
+
+                routine: "",
+                goals: "",
+                habits: "",
+                commitments: "",
+                other: "",
+                uploadedFile: ""
+            };
+
+
+            localStorage.removeItem(
+                "lifeos_lifestyle"
+            );
+
+
+            loadLifestyle();
+
+
+            $("fileStatus")
+                .textContent =
+                "Lifestyle cleared.";
+        }
+    );
+
+
+/* =========================================================
+   LIFESTYLE FILE UPLOAD
+========================================================= */
+
+$("lifestyleFile")
+    .addEventListener(
+        "change",
+        event => {
+
+            const file =
+                event.target.files[0];
+
+            if (!file) {
+                return;
+            }
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                () => {
+
+                    const text =
+                        String(
+                            reader.result ||
+                            ""
+                        );
+
+
+                    lifestyle.uploadedFile =
+                        text;
+
+
+                    $("fileStatus")
+                        .textContent =
+                        `✓ ${file.name} loaded successfully.`;
+
+                };
+
+
+            reader.onerror =
+                () => {
+
+                    $("fileStatus")
+                        .textContent =
+                        "❌ Could not read that file.";
+                };
+
+
+            reader.readAsText(file);
+        }
+    );
+
+
+/* =========================================================
+   BUILD PERSONAL LIFE PLAN
+========================================================= */
+
+$("generateLifestylePlan")
+    .addEventListener(
+        "click",
+        generateLifestylePlan
+    );
+
+
+async function generateLifestylePlan() {
+
+    const profile =
+        collectLifestyle();
+
+
+    if (
+        !profile.routine &&
+        !profile.goals &&
+        !profile.habits &&
+        !profile.commitments &&
+        !profile.other &&
+        !profile.uploadedFile
+    ) {
+
+        alert(
+            "Tell LIFEOS something about your lifestyle first."
+        );
+
+        return;
+    }
+
+
+    const button =
+        $("generateLifestylePlan");
+
+
+    button.disabled = true;
+
+    button.innerHTML = `
+        <span class="loading">
+            <span class="spinner"></span>
+            Building your plan...
+        </span>
+    `;
+
+
+    const message = `
+
+You are the LIFEOS personal life-planning AI agent.
+
+Create a realistic personalized life plan from the user's lifestyle information below.
+
+Do not create an impossible schedule.
+
+Respect existing commitments.
+
+Prioritize important goals.
+
+Include practical tasks with dates and times when possible.
+
+Return a structured JSON plan using this exact structure:
+
+{
+  "title": "string",
+  "summary": "string",
+  "goals": [
+    {
+      "title": "string",
+      "description": "string",
+      "progress": 0
+    }
+  ],
+  "tasks": [
+    {
+      "title": "string",
+      "description": "string",
+      "priority": "HIGH",
+      "date": "YYYY-MM-DD",
+      "time": "HH:MM"
+    }
+  ]
+}
+
+USER LIFESTYLE:
+
+Routine:
+${profile.routine}
+
+Goals:
+${profile.goals}
+
+Habits:
+${profile.habits}
+
+Commitments:
+${profile.commitments}
+
+Other information:
+${profile.other}
+
+Uploaded lifestyle/profile:
+${profile.uploadedFile}
+
+Create the best practical plan possible.
+`;
+
+
+    try {
+
+        const data =
+            await askAI(message);
+
+
+        const plan =
+            extractPlan(data);
+
+
+        if (!plan) {
+
+            const response =
+                data?.response ||
+                data?.message ||
+                "The AI did not return a structured plan.";
+
+            $("agentPlanResult")
+                .classList
+                .remove("hidden");
+
+            $("agentPlanResult")
+                .innerHTML = `
+                    <strong>LIFEOS AI Agent</strong>
+                    <br><br>
+                    ${escapeHTML(response)}
+                `;
+
+            return;
+        }
+
+
+        const scheduledTasks =
+            addPlanToLIFEOS(plan);
+
+
+        showPlanResult(
+            "agentPlanResult",
+            plan,
+            scheduledTasks
+        );
+
+
+        addChatMessage(
+            "ai",
+            "I've created your personalized LIFEOS plan and added the tasks and goals to your account."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "AI AGENT ERROR:",
+            error
+        );
+
+
+        $("agentPlanResult")
+            .classList
+            .remove("hidden");
+
+
+        $("agentPlanResult")
+            .innerHTML = `
+                <strong>❌ AI Agent connection failed</strong>
+                <br><br>
+                ${escapeHTML(
+                    error.message
+                )}
+                <br><br>
+                Check your backend at:
+                <br>
+                ${escapeHTML(API_URL)}
+            `;
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "✦ Build My Life Plan";
+    }
+}
+
+
+/* =========================================================
+   AI AGENT CHAT
+========================================================= */
+
+function addChatMessage(
+    sender,
+    message
+) {
+
+    const container =
+        $("chatMessages");
+
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+
+    div.className =
+        `chat-message ${sender}`;
+
+
+    div.textContent =
+        message;
+
+
+    container.appendChild(
+        div
+    );
+
+
+    container.scrollTop =
+        container.scrollHeight;
+}
+
+
+async function sendAgentMessage() {
+
+    const input =
+        $("agentChatInput");
+
+
+    const message =
+        input.value.trim();
+
+
+    if (!message) {
+        return;
+    }
+
+
+    addChatMessage(
+        "user",
+        message
+    );
+
+
+    input.value = "";
+
+
+    const button =
+        $("sendAgentMessage");
+
+
+    button.disabled = true;
+
+    button.textContent =
+        "Thinking...";
+
+
+    const profile =
+        collectLifestyle();
+
+
+    const context = `
+
+You are the LIFEOS AI Agent.
+
+Help the user organize their life.
+
+Their lifestyle information is:
+
+Routine:
+${profile.routine}
+
+Goals:
+${profile.goals}
+
+Habits:
+${profile.habits}
+
+Commitments:
+${profile.commitments}
+
+Other:
+${profile.other}
+
+The user's current tasks are:
+${JSON.stringify(tasks.slice(0, 30))}
+
+The user's current goals are:
+${JSON.stringify(goals.slice(0, 20))}
+
+User message:
+${message}
+
+Answer naturally and practically.
+
+If the user asks you to create or change tasks/goals,
+return a structured plan using:
+
+{
+  "title": "string",
+  "summary": "string",
+  "goals": [],
+  "tasks": []
+}
+
+Otherwise provide a helpful response.
+`;
+
+
+    try {
+
+        const data =
+            await askAI(context);
+
+
+        const plan =
+            extractPlan(data);
+
+
+        if (plan) {
+
+            const scheduledTasks =
+                addPlanToLIFEOS(
+                    plan
+                );
+
+
+            addChatMessage(
+                "ai",
+                plan.summary ||
+                "I've updated your LIFEOS plan."
+            );
+
+
+            if (
+                scheduledTasks.length
+            ) {
+
+                showPlanResult(
+                    "agentPlanResult",
+                    plan,
+                    scheduledTasks
+                );
+            }
+
+        } else {
+
+            const answer =
+                data?.response ||
+                data?.message ||
+                "I couldn't understand the AI response.";
+
+            addChatMessage(
+                "ai",
+                answer
+            );
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "CHAT ERROR:",
+            error
+        );
+
+
+        addChatMessage(
+            "ai",
+            "❌ I couldn't connect to the AI Agent. " +
+            error.message
+        );
+
+    } finally {
+
+        button.disabled = false;
+
+        button.textContent =
+            "Send";
+
+        input.focus();
+    }
+}
+
+
+$("sendAgentMessage")
+    .addEventListener(
+        "click",
+        sendAgentMessage
+    );
+
+
+$("agentChatInput")
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter"
+            ) {
+
+                event.preventDefault();
+
+                sendAgentMessage();
+            }
+        }
+    );
+
+
+/* =========================================================
+   TASK RENDERING
+========================================================= */
+
+function renderTasks() {
+
+    renderTaskContainer(
+        $("taskList"),
+        tasks.slice(0, 5)
+    );
+
+
+    renderTaskContainer(
+        $("allTasks"),
+        tasks
+    );
+}
+
+
+function renderTaskContainer(
+    container,
+    array
+) {
+
+    if (!container) {
+        return;
+    }
+
+
+    if (!array.length) {
+
+        container.innerHTML = `
+            <div class="task">
+                <span>No tasks yet.</span>
+            </div>
+        `;
+
+        return;
+    }
+
+
+    container.innerHTML =
+        array
+            .map(
+                task => `
+
+                    <div
+                        class="task ${
+                            task.completed
+                                ? "completed"
+                                : ""
+                        }"
+                        data-task-id="${task.id}"
+                    >
+
+                        <input
+                            type="checkbox"
+                            ${
+                                task.completed
+                                    ? "checked"
+                                    : ""
+                            }
+                            data-id="${task.id}"
+                        >
+
+                        <div class="task-info">
+
+                            <strong>
+                                ${escapeHTML(
+                                    task.title
+                                )}
+                            </strong>
+
+                            <small>
+                                ${escapeHTML(
+                                    task.description
+                                )}
+                            </small>
+
+                            ${
+                                task.date ||
+                                task.time
+                                ?
+
+                                `
+                                    <small>
+                                        📅 ${
+                                            escapeHTML(
+                                                task.date ||
+                                                "No date"
+                                            )
+                                        }
+
+                                        ${
+                                            task.time
+                                            ?
+
+                                            ` • ⏰ ${
+                                                escapeHTML(
+                                                    task.time
+                                                )
+                                            }`
+
+                                            : ""
+                                        }
+                                    </small>
+                                `
+
+                                : ""
+                            }
+
+                        </div>
+
+                        <span class="priority">
+                            ${escapeHTML(
+                                task.priority ||
+                                "MEDIUM"
+                            )}
+                        </span>
+
+                    </div>
+                `
+            )
+            .join("");
+
+
+    container
+        .querySelectorAll(
+            'input[type="checkbox"]'
+        )
+        .forEach(
+            checkbox => {
+
+                checkbox.addEventListener(
+                    "change",
+                    () => {
+
+                        const task =
+                            tasks.find(
+                                item =>
+                                    String(
+                                        item.id
+                                    ) ===
+                                    checkbox.dataset.id
+                            );
+
+
+                        if (!task) {
+                            return;
+                        }
+
+
+                        task.completed =
+                            checkbox.checked;
+
+
+                        save();
+
+                        render();
+                    }
+                );
+            }
+        );
+
+
+    container
+        .querySelectorAll(".task")
+        .forEach(
+            element => {
+
+                element.addEventListener(
+                    "click",
+                    event => {
+
+                        if (
+                            event.target.matches(
+                                "input"
+                            )
+                        ) {
+                            return;
+                        }
+
+
+                        const task =
+                            tasks.find(
+                                item =>
+                                    String(
+                                        item.id
+                                    ) ===
+                                    element.dataset.taskId
+                            );
+
+
+                        if (task) {
+                            openTaskDetails(
+                                task
+                            );
+                        }
+                    }
+                );
+            }
+        );
+}
+
+
+/* =========================================================
+   TASK DETAILS
+========================================================= */
+
+function openTaskDetails(
+    task
+) {
+
+    if (!task) {
+        return;
+    }
+
+
+    selectedTask =
+        task;
+
+
+    $("detailsTaskTitle")
+        .textContent =
+        task.title ||
+        "Task";
+
+
+    $("detailsTaskContent")
+        .innerHTML = `
+
+            <div class="task-detail-row">
+                <strong>Date:</strong>
+                ${escapeHTML(
+                    task.date ||
+                    "No date"
+                )}
+            </div>
+
+            <div class="task-detail-row">
+                <strong>Time:</strong>
+                ${escapeHTML(
+                    task.time ||
+                    "No time"
+                )}
+            </div>
+
+            <div class="task-detail-row">
+                <strong>Priority:</strong>
+                ${escapeHTML(
+                    task.priority ||
+                    "MEDIUM"
+                )}
+            </div>
+
+            <div class="task-detail-row">
+                <strong>Status:</strong>
+                ${
+                    task.completed
+                    ? "Completed"
+                    : "Not completed"
+                }
+            </div>
+
+            <div class="task-detail-row">
+                <strong>Description:</strong>
+                <br>
+                ${escapeHTML(
+                    task.description ||
+                    "No description"
+                )}
+            </div>
+        `;
+
+
+    $("completeTaskButton")
+        .textContent =
+        task.completed
+        ? "↩️ Mark Incomplete"
+        : "☑️ Complete";
+
+
+    $("taskDetailsModal")
+        .classList
+        .remove("hidden");
+}
+
+
+function closeTaskDetails() {
+
+    $("taskDetailsModal")
+        .classList
+        .add("hidden");
+
+    selectedTask =
+        null;
+}
+
+
+$("closeTaskDetails")
+    .addEventListener(
+        "click",
+        closeTaskDetails
+    );
+
+
+$("taskDetailsModal")
+    .addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.id ===
+                "taskDetailsModal"
+            ) {
+
+                closeTaskDetails();
+            }
+        }
+    );
+
+
+$("completeTaskButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!selectedTask) {
+                return;
+            }
+
+
+            selectedTask.completed =
+                !selectedTask.completed;
+
+
+            save();
+
+            render();
+
+
+            openTaskDetails(
+                selectedTask
+            );
+        }
+    );
+
+
+$("deleteTaskButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!selectedTask) {
+                return;
+            }
+
+
+            const confirmed =
+                confirm(
+                    "Delete this task?"
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            const id =
+                selectedTask.id;
+
+
+            tasks =
+                tasks.filter(
+                    task =>
+                        task.id !== id
+                );
+
+
+            save();
+
+            closeTaskDetails();
+
+            render();
+        }
+    );
+
+
+$("editTaskButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (!selectedTask) {
+                return;
+            }
+
+
+            const task =
+                selectedTask;
+
+
+            closeTaskDetails();
+
+            openTaskModal(
+                task
+            );
+        }
+    );
+
+
+/* =========================================================
+   ADD / EDIT TASK
+========================================================= */
+
+function openTaskModal(
+    task = null
+) {
+
+    editingTaskId =
+        task
+        ? task.id
+        : null;
+
+
+    $("taskModalTitle")
+        .textContent =
+        task
+        ? "Edit Task"
+        : "Add a Task";
+
+
+    $("taskInput").value =
+        task?.title ||
+        "";
+
+
+    $("taskDate").value =
+        task?.date ||
+        "";
+
+
+    $("taskTime").value =
+        task?.time ||
+        "";
+
+
+    $("taskPriority").value =
+        task?.priority ||
+        "MEDIUM";
+
+
+    $("taskDescription").value =
+        task?.description ||
+        "";
+
+
+    $("modal")
+        .classList
+        .remove("hidden");
+
+
+    $("taskInput").focus();
+}
+
+
+$("addTask")
+    .addEventListener(
+        "click",
+        () =>
+            openTaskModal()
+    );
+
+
+function closeTaskModal() {
+
+    $("modal")
+        .classList
+        .add("hidden");
+
+    editingTaskId =
+        null;
+}
+
+
+$("closeModal")
+    .addEventListener(
+        "click",
+        closeTaskModal
+    );
+
+
+$("cancelTaskModal")
+    .addEventListener(
+        "click",
+        closeTaskModal
+    );
+
+
+$("modal")
+    .addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.id ===
+                "modal"
+            ) {
+
+                closeTaskModal();
+            }
+        }
+    );
+
+
+$("saveTask")
+    .addEventListener(
+        "click",
+        () => {
+
+            const title =
+                $("taskInput")
+                    .value
+                    .trim();
+
+
+            if (!title) {
+
+                alert(
+                    "Please enter a task."
+                );
+
+                return;
+            }
+
+
+            const date =
+                $("taskDate").value;
+
+
+            const time =
+                $("taskTime").value;
+
+
+            const priority =
+                normalizePriority(
+                    $("taskPriority").value
+                );
+
+
+            const description =
+                $("taskDescription")
+                    .value
+                    .trim() ||
+                "Added manually.";
+
+
+            if (
+                editingTaskId !==
+                null
+            ) {
+
+                const task =
+                    tasks.find(
+                        item =>
+                            item.id ===
+                            editingTaskId
+                    );
+
+
+                if (task) {
+
+                    task.title =
+                        title;
+
+                    task.date =
+                        date;
+
+                    task.time =
+                        time;
+
+                    task.priority =
+                        priority;
+
+                    task.description =
+                        description;
+                }
+
+            } else {
+
+                tasks.push({
+
+                    id:
+                        Date.now() +
+                        Math.random(),
+
+                    title,
+
+                    date,
+
+                    time,
+
+                    priority,
+
+                    description,
+
+                    completed: false
+                });
+            }
+
+
+            save();
+
+            render();
+
+            closeTaskModal();
+        }
+    );
+
+
+/* =========================================================
+   GOALS
+========================================================= */
+
+function renderGoals() {
+
+    if (!goals.length) {
+
+        $("goalList").innerHTML = `
+
+            <div class="goal">
+
+                <h3>
+                    No goals yet
+                </h3>
+
+                <p>
+                    Create your first goal
+                    or let LIFEOS AI create one.
+                </p>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    $("goalList").innerHTML =
+        goals
+            .map(
+                (goal, index) => {
+
+                    const progress =
+                        Math.max(
+                            0,
+                            Math.min(
+                                100,
+                                Number(
+                                    goal.progress
+                                ) || 0
+                            )
+                        );
+
+
+                    return `
+
+                        <div class="goal">
+
+                            <h3>
+                                ${escapeHTML(
+                                    goal.title
+                                )}
+                            </h3>
+
+                            <p>
+                                ${escapeHTML(
+                                    goal.description ||
+                                    ""
+                                )}
+                            </p>
+
+                            <div class="progress">
+
+                                <div
+                                    style="
+                                        width:${progress}%;
+                                    "
+                                ></div>
+
+                            </div>
+
+                            <p>
+                                ${progress}% complete
+                            </p>
+
+                            <div class="goal-actions">
+
+                                <button
+                                    class="secondary"
+                                    data-edit-goal="${index}"
+                                >
+                                    ✏️ Edit
+                                </button>
+
+                                <button
+                                    class="danger-btn"
+                                    data-delete-goal="${index}"
+                                >
+                                    🗑️ Delete
+                                </button>
+
+                            </div>
+
+                        </div>
+                    `;
+                }
+            )
+            .join("");
+
+
+    document
+        .querySelectorAll(
+            "[data-edit-goal]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        editGoal(
+                            Number(
+                                button.dataset.editGoal
+                            )
+                        );
+                    }
+                );
+            }
+        );
+
+
+    document
+        .querySelectorAll(
+            "[data-delete-goal]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        deleteGoal(
+                            Number(
+                                button.dataset.deleteGoal
+                            )
+                        );
+                    }
+                );
+            }
+        );
+}
+
+
+function openGoalModal(
+    index = null
+) {
+
+    editingGoalIndex =
+        index;
+
+
+    $("goalModalTitle")
+        .textContent =
+        index === null
+        ? "Add a Goal"
+        : "Edit Goal";
+
+
+    const goal =
+        index === null
+        ? {}
+        : goals[index];
+
+
+    $("goalTitle").value =
+        goal.title ||
+        "";
+
+
+    $("goalDescription").value =
+        goal.description ||
+        "";
+
+
+    const progress =
+        Number(
+            goal.progress
+        ) || 0;
+
+
+    $("goalProgress").value =
+        progress;
+
+
+    $("goalProgressValue")
+        .textContent =
+        progress +
+        "%";
+
+
+    $("goalModal")
+        .classList
+        .remove("hidden");
+
+
+    $("goalTitle").focus();
+}
+
+
+function closeGoalModal() {
+
+    $("goalModal")
+        .classList
+        .add("hidden");
+
+    editingGoalIndex =
+        null;
+}
+
+
+function editGoal(index) {
+
+    if (
+        index < 0 ||
+        index >= goals.length
+    ) {
+        return;
+    }
+
+
+    openGoalModal(
+        index
+    );
+}
+
+
+function deleteGoal(index) {
+
+    if (
+        index < 0 ||
+        index >= goals.length
+    ) {
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to delete this goal?"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    goals.splice(
+        index,
+        1
+    );
+
+
+    save();
+
+    render();
+}
+
+
+$("addGoal")
+    .addEventListener(
+        "click",
+        () =>
+            openGoalModal()
+    );
+
+
+$("closeGoalModal")
+    .addEventListener(
+        "click",
+        closeGoalModal
+    );
+
+
+$("cancelGoalModal")
+    .addEventListener(
+        "click",
+        closeGoalModal
+    );
+
+
+$("goalModal")
+    .addEventListener(
+        "click",
+        event => {
+
+            if (
+                event.target.id ===
+                "goalModal"
+            ) {
+
+                closeGoalModal();
+            }
+        }
+    );
+
+
+$("goalProgress")
+    .addEventListener(
+        "input",
+        () => {
+
+            $("goalProgressValue")
+                .textContent =
+                $("goalProgress").value +
+                "%";
+        }
+    );
+
+
+$("saveGoal")
+    .addEventListener(
+        "click",
+        () => {
+
+            const title =
+                $("goalTitle")
+                    .value
+                    .trim();
+
+
+            if (!title) {
+
+                alert(
+                    "Please enter a goal."
+                );
+
+                return;
+            }
+
+
+            const data = {
+
+                title,
+
+                description:
+                    $("goalDescription")
+                        .value
+                        .trim(),
+
+                progress:
+                    Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            Number(
+                                $("goalProgress")
+                                    .value
+                            ) || 0
+                        )
+                    )
+            };
+
+
+            if (
+                editingGoalIndex ===
+                null
+            ) {
+
+                goals.push({
+
+                    id:
+                        Date.now() +
+                        Math.random(),
+
+                    ...data
+                });
+
+            } else {
+
+                goals[
+                    editingGoalIndex
+                ] = {
+
+                    ...goals[
+                        editingGoalIndex
+                    ],
+
+                    ...data
+                };
+            }
+
+
+            save();
+
+            render();
+
+            closeGoalModal();
+        }
+    );
+
+
+/* =========================================================
+   CALENDAR
+========================================================= */
+
+function renderCalendar() {
+
+    if (
+        calendarView ===
+        "month"
+    ) {
+
+        renderMonthView();
+
+    } else if (
+        calendarView ===
+        "week"
+    ) {
+
+        renderWeekView();
+
+    } else {
+
+        renderDayView();
+    }
+}
+
+
+function renderMonthView() {
+
+    $("calendarGrid")
+        .className =
+        "calendar-grid";
+
+
+    const year =
+        calendarDate
+            .getFullYear();
+
+
+    const month =
+        calendarDate
+            .getMonth();
+
+
+    $("calendarMonth")
+        .textContent =
+        calendarDate
+            .toLocaleString(
+                "default",
+                {
+                    month: "long",
+                    year: "numeric"
+                }
+            );
+
+
+    let html = "";
+
+
+    [
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat"
+    ]
+    .forEach(
+        day => {
+
+            html += `
+                <div class="calendar-day-name">
+                    ${day}
+                </div>
+            `;
+        }
+    );
+
+
+    const firstDay =
+        new Date(
+            year,
+            month,
+            1
+        ).getDay();
+
+
+    const daysInMonth =
+        new Date(
+            year,
+            month + 1,
+            0
+        ).getDate();
+
+
+    for (
+        let i = 0;
+        i < firstDay;
+        i++
+    ) {
+
+        html += `
+            <div class="calendar-day calendar-empty"></div>
+        `;
+    }
+
+
+    for (
+        let day = 1;
+        day <= daysInMonth;
+        day++
+    ) {
+
+        const date =
+            new Date(
+                year,
+                month,
+                day
+            );
+
+
+        const key =
+            dateKey(date);
+
+
+        const dayTasks =
+            tasks.filter(
+                task =>
+                    task.date ===
+                    key
+            );
+
+
+        html += `
+
+            <div class="calendar-day">
+
+                <div class="calendar-day-number">
+                    ${day}
+                </div>
+
+                ${
+                    dayTasks
+                        .map(
+                            task => `
+
+                                <div
+                                    class="calendar-event"
+                                    data-id="${task.id}"
+                                >
+
+                                    ⏰ ${
+                                        escapeHTML(
+                                            task.time ||
+                                            ""
+                                        )
+                                    }
+
+                                    <br>
+
+                                    ${
+                                        escapeHTML(
+                                            task.title
+                                        )
+                                    }
+
+                                </div>
+                            `
+                        )
+                        .join("")
+                }
+
+            </div>
+        `;
+    }
+
+
+    $("calendarGrid")
+        .innerHTML =
+        html;
+
+
+    attachCalendarEvents();
+}
+
+
+function renderWeekView() {
+
+    $("calendarGrid")
+        .className =
+        "calendar-grid calendar-real-week-grid";
+
+
+    const start =
+        new Date(
+            calendarDate
+        );
+
+
+    start.setDate(
+        start.getDate() -
+        start.getDay()
+    );
+
+
+    const end =
+        new Date(
+            start
+        );
+
+
+    end.setDate(
+        start.getDate() +
+        6
+    );
+
+
+    $("calendarMonth")
+        .textContent =
+        `${start.toLocaleDateString(
+            "default",
+            {
+                month: "short",
+                day: "numeric"
+            }
+        )} - ${end.toLocaleDateString(
+            "default",
+            {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            }
+        )}`;
+
+
+    let html = `
+
+        <div class="week-time-column">
+
+            <div class="week-time-header"></div>
+    `;
+
+
+    for (
+        let hour = 0;
+        hour < 24;
+        hour++
+    ) {
+
+        html += `
+            <div class="week-time-label">
+                ${String(hour).padStart(2, "0")}:00
+            </div>
+        `;
+    }
+
+
+    html += `
+        </div>
+    `;
+
+
+    for (
+        let dayIndex = 0;
+        dayIndex < 7;
+        dayIndex++
+    ) {
+
+        const day =
+            new Date(
+                start
+            );
+
+
+        day.setDate(
+            start.getDate() +
+            dayIndex
+        );
+
+
+        const key =
+            dateKey(day);
+
+
+        html += `
+
+            <div class="week-column">
+
+                <div class="week-day-header">
+
+                    ${day.toLocaleDateString(
+                        "default",
+                        {
+                            weekday: "short"
+                        }
+                    )}
+
+                    <strong>
+                        ${day.getDate()}
+                    </strong>
+
+                </div>
+        `;
+
+
+        for (
+            let hour = 0;
+            hour < 24;
+            hour++
+        ) {
+
+            const hourTasks =
+                tasks.filter(
+                    task => {
+
+                        if (
+                            task.date !==
+                                key ||
+                            !task.time
+                        ) {
+
+                            return false;
+                        }
+
+
+                        return (
+                            parseInt(
+                                task.time
+                                    .split(":")[0],
+                                10
+                            ) === hour
+                        );
+                    }
+                );
+
+
+            html += `
+
+                <div class="week-hour">
+
+                    ${
+                        hourTasks
+                            .map(
+                                task => `
+
+                                    <div
+                                        class="calendar-event week-event"
+                                        data-id="${task.id}"
+                                        style="
+                                            margin-top:${
+                                                parseInt(
+                                                    task.time
+                                                        .split(":")[1],
+                                                    10
+                                                ) || 0
+                                            }px;
+                                        "
+                                    >
+
+                                        <strong>
+                                            ${escapeHTML(
+                                                task.time
+                                            )}
+                                        </strong>
+
+                                        <br>
+
+                                        ${escapeHTML(
+                                            task.title
+                                        )}
+
+                                    </div>
+                                `
+                            )
+                            .join("")
+                    }
+
+                </div>
+            `;
+        }
+
+
+        html += `
+            </div>
+        `;
+    }
+
+
+    $("calendarGrid")
+        .innerHTML =
+        html;
+
+
+    attachCalendarEvents();
+}
+
+
+function renderDayView() {
+
+    $("calendarGrid")
+        .className =
+        "calendar-grid calendar-day-grid";
+
+
+    $("calendarMonth")
+        .textContent =
+        calendarDate
+            .toLocaleDateString(
+                "default",
+                {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
+
+
+    const key =
+        dateKey(
+            calendarDate
+        );
+
+
+    let html = "";
+
+
+    for (
+        let hour = 0;
+        hour < 24;
+        hour++
+    ) {
+
+        const hourTasks =
+            tasks.filter(
+                task => {
+
+                    if (
+                        task.date !==
+                            key ||
+                        !task.time
+                    ) {
+
+                        return false;
+                    }
+
+
+                    return (
+                        parseInt(
+                            task.time
+                                .split(":")[0],
+                            10
+                        ) === hour
+                    );
+                }
+            );
+
+
+        html += `
+
+            <div class="calendar-hour">
+
+                <div class="calendar-hour-time">
+                    ${String(hour).padStart(2, "0")}:00
+                </div>
+
+                <div class="calendar-hour-content">
+
+                    ${
+                        hourTasks
+                            .map(
+                                task => `
+
+                                    <div
+                                        class="calendar-event"
+                                        data-id="${task.id}"
+                                        style="
+                                            margin-top:${
+                                                parseInt(
+                                                    task.time
+                                                        .split(":")[1],
+                                                    10
+                                                ) || 0
+                                            }px;
+                                        "
+                                    >
+
+                                        <strong>
+                                            ⏰ ${escapeHTML(
+                                                task.time
+                                            )}
+                                        </strong>
+
+                                        <br>
+
+                                        ${escapeHTML(
+                                            task.title
+                                        )}
+
+                                    </div>
+                                `
+                            )
+                            .join("")
+                    }
+
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    $("calendarGrid")
+        .innerHTML =
+        html;
+
+
+    attachCalendarEvents();
+}
+
+
+function attachCalendarEvents() {
+
+    $("calendarGrid")
+        .querySelectorAll(
+            ".calendar-event"
+        )
+        .forEach(
+            element => {
+
+                element.addEventListener(
+                    "click",
+                    () => {
+
+                        const task =
+                            tasks.find(
+                                item =>
+                                    String(
+                                        item.id
+                                    ) ===
+                                    element.dataset.id
+                            );
+
+
+                        if (task) {
+
+                            openTaskDetails(
+                                task
+                            );
+                        }
+                    }
+                );
+            }
+        );
+}
+
+
+/* =========================================================
+   CALENDAR CONTROLS
+========================================================= */
+
+$("prevMonth")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                calendarView ===
+                "month"
+            ) {
+
+                calendarDate.setMonth(
+                    calendarDate.getMonth() -
+                    1
+                );
+
+            } else {
+
+                calendarDate.setDate(
+                    calendarDate.getDate() -
+                    7
+                );
+            }
+
+
+            renderCalendar();
+        }
+    );
+
+
+$("nextMonth")
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                calendarView ===
+                "month"
+            ) {
+
+                calendarDate.setMonth(
+                    calendarDate.getMonth() +
+                    1
+                );
+
+            } else {
+
+                calendarDate.setDate(
+                    calendarDate.getDate() +
+                    7
+                );
+            }
+
+
+            renderCalendar();
+        }
+    );
+
+
+$("todayButton")
+    .addEventListener(
+        "click",
+        () => {
+
+            calendarDate =
+                new Date();
+
+            renderCalendar();
+        }
+    );
+
+
+$("monthView")
+    .addEventListener(
+        "click",
+        () => {
+
+            calendarView =
+                "month";
+
+            renderCalendar();
+        }
+    );
+
+
+$("weekView")
+    .addEventListener(
+        "click",
+        () => {
+
+            calendarView =
+                "week";
+
+            renderCalendar();
+        }
+    );
+
+
+$("dayView")
+    .addEventListener(
+        "click",
+        () => {
+
+            calendarView =
+                "day";
+
+            renderCalendar();
+        }
+    );
+
+
+/* =========================================================
+   STATS
+========================================================= */
+
+function updateStats() {
+
+    const completed =
+        tasks.filter(
+            task =>
+                task.completed
+        ).length;
+
+
+    const total =
+        tasks.length;
+
+
+    const percentage =
+        total
+        ? Math.round(
+            completed /
+            total *
+            100
+        )
+        : 0;
+
+
+    $("goalCount")
+        .textContent =
+        goals.length;
+
+
+    $("completedCount")
+        .textContent =
+        completed;
+
+
+    $("completionRate")
+        .textContent =
+        percentage +
+        "%";
+
+
+    $("streak")
+        .textContent =
+        completed
+        ? Math.min(
+            completed,
+            30
+        ) +
+        " days"
+        : "0 days";
+
+
+    $("progressBar")
+        .style
+        .width =
+        percentage +
+        "%";
+
+
+    $("progressText")
+        .textContent =
+        percentage +
+        "%";
+}
+
+
+/* =========================================================
+   DARK MODE
+========================================================= */
+
+$("darkMode")
+    .addEventListener(
+        "click",
+        () => {
+
+            document.body
+                .classList
+                .toggle("dark");
+
+
+            localStorage.setItem(
+                "lifeos_dark",
+                document.body
+                    .classList
+                    .contains("dark")
+            );
+        }
+    );
+
+
+if (
+    localStorage.getItem(
+        "lifeos_dark"
+    ) === "true"
+) {
+
+    document.body
+        .classList
+        .add("dark");
+}
+
+
+/* =========================================================
+   MAIN RENDER
+========================================================= */
+
+function render() {
+
+    renderTasks();
+
+    renderGoals();
+
+    renderCalendar();
+
+    updateStats();
+}
+
+
+render();
+
+</script>
+
+</body>
+</html>
+
