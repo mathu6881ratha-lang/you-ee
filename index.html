@@ -1752,6 +1752,7 @@ input {
 ========================================================= */
 
 const API_URL =
+    window.LIFEOS_API_URL ||
     "https://life-os-76az.onrender.com/ask";
 
 
@@ -2009,50 +2010,60 @@ document
 ========================================================= */
 
 async function askAI(message) {
+    if (!message || !String(message).trim()) {
+        throw new Error("Please enter a message.");
+    }
 
-    const response =
-        await fetch(
-            API_URL,
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body: JSON.stringify({
-                    message
-                })
-            }
-        );
-
-
-    let data = null;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30000);
 
     try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                message: String(message).trim()
+            }),
+            signal: controller.signal
+        });
 
-        data =
-            await response.json();
+        const contentType = response.headers.get("content-type") || "";
+        let data;
 
-    } catch {
+        if (contentType.includes("application/json")) {
+            data = await response.json();
+        } else {
+            const raw = await response.text();
+            throw new Error(
+                response.ok
+                    ? "The AI server returned an invalid response."
+                    : `AI server error (${response.status}). ${raw.slice(0, 180)}`
+            );
+        }
 
-        throw new Error(
-            "The AI server returned an invalid response."
-        );
+        if (!response.ok) {
+            throw new Error(
+                data?.error || `AI request failed (${response.status}).`
+            );
+        }
+
+        return data;
+    } catch (error) {
+        if (error.name === "AbortError") {
+            throw new Error("The AI request timed out. Please try again.");
+        }
+        if (error instanceof TypeError) {
+            throw new Error(
+                "Could not reach the LIFEOS AI server. Check your internet connection and make sure the Render backend is running."
+            );
+        }
+        throw error;
+    } finally {
+        clearTimeout(timeout);
     }
-
-
-    if (!response.ok) {
-
-        throw new Error(
-            data?.error ||
-            "AI request failed."
-        );
-    }
-
-
-    return data;
 }
 
 
@@ -5084,8 +5095,19 @@ function render() {
 
 render();
 
+
+
+/* =========================================================
+   SAFETY / ERROR HANDLING
+========================================================= */
+window.addEventListener("error", event => {
+    console.error("LIFEOS error:", event.error || event.message);
+});
+
+window.addEventListener("unhandledrejection", event => {
+    console.error("LIFEOS promise error:", event.reason);
+});
 </script>
 
 </body>
 </html>
-
