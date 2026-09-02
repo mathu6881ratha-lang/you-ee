@@ -1,15 +1,41 @@
 const http = require("http");
 const { GoogleGenAI } = require("@google/genai");
 
-const ai = new GoogleGenAI({
-    apiKey: "AQ.Ab8RN6L6yFVkYAfwC40mGcxQKuDdlFuGCdPLYSO0cWYznFYQCw"
-});
+const PORT = process.env.PORT || 3000;
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
+
+if (!GEMINI_API_KEY) {
+    console.error("ERROR: GEMINI_API_KEY is not set.");
+}
+
+const ai = GEMINI_API_KEY
+    ? new GoogleGenAI({ apiKey: GEMINI_API_KEY })
+    : null;
+
+function sendJson(res, statusCode, data) {
+    res.writeHead(statusCode, {
+        "Content-Type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type"
+    });
+
+    res.end(JSON.stringify(data));
+}
+
 const server = http.createServer(async (req, res) => {
 
     // CORS
     res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "POST, GET, OPTIONS"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type"
+    );
 
     // Browser preflight request
     if (req.method === "OPTIONS") {
@@ -18,13 +44,40 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    res.setHeader("Content-Type", "application/json");
+    // Health check
+    if (req.method === "GET" && req.url === "/health") {
+        sendJson(res, 200, {
+            ok: true,
+            service: "LIFEOS AI",
+            model: GEMINI_MODEL,
+            configured: Boolean(GEMINI_API_KEY)
+        });
+        return;
+    }
 
+    // Root page
+    if (req.method === "GET" && req.url === "/") {
+        sendJson(res, 200, {
+            ok: true,
+            service: "LIFEOS AI",
+            message: "LIFEOS backend is running."
+        });
+        return;
+    }
+
+    // Only allow POST /ask
     if (req.method !== "POST" || req.url !== "/ask") {
-        res.writeHead(404);
-        res.end(JSON.stringify({
+        sendJson(res, 404, {
             error: "Not found"
-        }));
+        });
+        return;
+    }
+
+    // Make sure API key exists
+    if (!ai) {
+        sendJson(res, 500, {
+            error: "GEMINI_API_KEY is not configured on the server."
+        });
         return;
     }
 
@@ -32,30 +85,47 @@ const server = http.createServer(async (req, res) => {
 
     req.on("data", chunk => {
         body += chunk;
+
+        // Prevent very large requests
+        if (body.length > 1000000) {
+            req.destroy();
+        }
     });
 
     req.on("end", async () => {
 
         try {
 
-            const data = JSON.parse(body);
+            let data;
 
-            if (!data.message) {
-                res.writeHead(400);
-                res.end(JSON.stringify({
-                    error: "Message is required"
-                }));
+            try {
+                data = JSON.parse(body);
+            } catch (error) {
+                sendJson(res, 400, {
+                    error: "Invalid JSON request."
+                });
                 return;
             }
 
-           const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash-lite",
+            const message = String(data.message || "").trim();
 
-    contents: `
+            if (!message) {
+                sendJson(res, 400, {
+                    error: "Message is required."
+                });
+                return;
+            }
+
+            const response = await ai.models.generateContent({
+
+                model: GEMINI_MODEL,
+
+                contents: `
 You are LIFEOS, an intelligent personal life planner.
 
 The user says:
-${data.message}
+
+${message}
 
 Create a practical plan based on the user's request.
 
@@ -83,133 +153,165 @@ Return ONLY valid JSON with this exact structure:
 }
 
 Rules:
+
 - Create 3 to 8 useful tasks.
 - Create 1 to 3 goals.
 - Priority must be HIGH, MEDIUM, or LOW.
 - Progress must be a number from 0 to 100.
 - Every task must have a date in YYYY-MM-DD format.
 - Every task must have a time in HH:MM 24-hour format.
-- Schedule tasks logically across the available time.
+- Schedule tasks logically.
 - Never schedule two tasks at the same time.
 - Do not use Markdown.
 - Return JSON only.
 `,
 
-    config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-            type: "object",
-            properties: {
-                title: {
-                    type: "string"
-                },
-                summary: {
-                    type: "string"
-                },
-               tasks: {
-    type: "array",
+                config: {
 
-    items: {
-        type: "object",
+                    responseMimeType: "application/json",
 
-        properties: {
+                    responseSchema: {
 
-            title: {
-                type: "string"
-            },
-
-            description: {
-                type: "string"
-            },
-
-            priority: {
-                type: "string",
-                enum: [
-                    "HIGH",
-                    "MEDIUM",
-                    "LOW"
-                ]
-            },
-
-            date: {
-                type: "string"
-            },
-
-            time: {
-                type: "string"
-            }
-
-        },
-
-        required: [
-            "title",
-            "description",
-            "priority",
-            "date",
-            "time"
-        ]
-    }
-},
-                goals: {
-                    type: "array",
-                    items: {
                         type: "object",
+
                         properties: {
+
                             title: {
                                 type: "string"
                             },
-                            description: {
+
+                            summary: {
                                 type: "string"
                             },
-                            progress: {
-                                type: "number"
+
+                            tasks: {
+
+                                type: "array",
+
+                                items: {
+
+                                    type: "object",
+
+                                    properties: {
+
+                                        title: {
+                                            type: "string"
+                                        },
+
+                                        description: {
+                                            type: "string"
+                                        },
+
+                                        priority: {
+                                            type: "string",
+                                            enum: [
+                                                "HIGH",
+                                                "MEDIUM",
+                                                "LOW"
+                                            ]
+                                        },
+
+                                        date: {
+                                            type: "string"
+                                        },
+
+                                        time: {
+                                            type: "string"
+                                        }
+
+                                    },
+
+                                    required: [
+                                        "title",
+                                        "description",
+                                        "priority",
+                                        "date",
+                                        "time"
+                                    ]
+                                }
+                            },
+
+                            goals: {
+
+                                type: "array",
+
+                                items: {
+
+                                    type: "object",
+
+                                    properties: {
+
+                                        title: {
+                                            type: "string"
+                                        },
+
+                                        description: {
+                                            type: "string"
+                                        },
+
+                                        progress: {
+                                            type: "number"
+                                        }
+
+                                    },
+
+                                    required: [
+                                        "title",
+                                        "description",
+                                        "progress"
+                                    ]
+                                }
                             }
+
                         },
+
                         required: [
                             "title",
-                            "description",
-                            "progress"
+                            "summary",
+                            "tasks",
+                            "goals"
                         ]
                     }
                 }
-            },
-            required: [
-                "title",
-                "summary",
-                "tasks",
-                "goals"
-            ]
-        }
-    }
-});
+            });
 
-            res.writeHead(200);
+            let plan;
 
-           const plan = JSON.parse(response.text);
+            try {
+                plan = JSON.parse(response.text);
+            } catch (error) {
 
-res.end(JSON.stringify({
-    plan: plan
-}));
+                sendJson(res, 500, {
+                    error: "AI returned an invalid plan format."
+                });
+
+                return;
+            }
+
+            sendJson(res, 200, {
+                plan: plan
+            });
+
         } catch (error) {
 
             console.error("GEMINI ERROR:", error);
 
-            res.writeHead(500);
-
-            res.end(JSON.stringify({
-                error: error.message || "AI request failed"
-            }));
-
+            sendJson(res, 500, {
+                error: error.message || "AI request failed."
+            });
         }
+    });
 
+    req.on("error", error => {
+        console.error("REQUEST ERROR:", error);
     });
 
 });
 
-server.listen(3000, () => {
+server.listen(PORT, "0.0.0.0", () => {
 
     console.log(
-        "LIFEOS AI server running at http://localhost:3000"
+        `LIFEOS AI server running on port ${PORT}`
     );
 
 });
