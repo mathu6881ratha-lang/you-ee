@@ -1,28 +1,44 @@
 const http = require("http");
 const { GoogleGenAI } = require("@google/genai");
 
+// =====================================================
+// LIFEOS CONFIGURATION
+// =====================================================
+
+// PUT YOUR NEW GEMINI API KEY BETWEEN THE QUOTES
+const GEMINI_API_KEY = "AQ.Ab8RN6L6yFVkYAfwC40mGcxQKuDdlFuGCdPLYSO0cWYznFYQCw";
+
+// Gemini model
+const GEMINI_MODEL = "gemini-3.5-flash-lite";
+
 const PORT = process.env.PORT || 3000;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
 
-if (!GEMINI_API_KEY) {
-    console.error("ERROR: GEMINI_API_KEY is not set.");
-}
+// =====================================================
+// GEMINI
+// =====================================================
 
-const ai = GEMINI_API_KEY
-    ? new GoogleGenAI({ apiKey: GEMINI_API_KEY })
-    : null;
+const ai = new GoogleGenAI({
+    apiKey: GEMINI_API_KEY
+});
+
+// =====================================================
+// HELPERS
+// =====================================================
 
 function sendJson(res, statusCode, data) {
     res.writeHead(statusCode, {
         "Content-Type": "application/json; charset=utf-8",
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type"
     });
 
     res.end(JSON.stringify(data));
 }
+
+// =====================================================
+// SERVER
+// =====================================================
 
 const server = http.createServer(async (req, res) => {
 
@@ -30,288 +46,366 @@ const server = http.createServer(async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(
         "Access-Control-Allow-Methods",
-        "POST, GET, OPTIONS"
+        "GET, POST, OPTIONS"
     );
     res.setHeader(
         "Access-Control-Allow-Headers",
         "Content-Type"
     );
 
-    // Browser preflight request
+    // OPTIONS request
     if (req.method === "OPTIONS") {
         res.writeHead(204);
         res.end();
         return;
     }
 
-    // Health check
+    // =================================================
+    // HEALTH CHECK
+    // =================================================
+
     if (req.method === "GET" && req.url === "/health") {
         sendJson(res, 200, {
             ok: true,
             service: "LIFEOS AI",
             model: GEMINI_MODEL,
-            configured: Boolean(GEMINI_API_KEY)
+            configured: GEMINI_API_KEY.length > 10
         });
+
         return;
     }
 
-    // Root page
+    // =================================================
+    // HOME
+    // =================================================
+
     if (req.method === "GET" && req.url === "/") {
         sendJson(res, 200, {
             ok: true,
             service: "LIFEOS AI",
-            message: "LIFEOS backend is running."
+            message: "LIFEOS backend is running.",
+            endpoint: "/ask"
         });
+
         return;
     }
 
-    // Only allow POST /ask
-    if (req.method !== "POST" || req.url !== "/ask") {
-        sendJson(res, 404, {
-            error: "Not found"
+    // =================================================
+    // AI ENDPOINT
+    // =================================================
+
+    if (req.method === "POST" && req.url === "/ask") {
+
+        let body = "";
+
+        req.on("data", chunk => {
+            body += chunk;
+
+            // Prevent huge requests
+            if (body.length > 1000000) {
+                req.destroy();
+            }
         });
-        return;
-    }
 
-    // Make sure API key exists
-    if (!ai) {
-        sendJson(res, 500, {
-            error: "GEMINI_API_KEY is not configured on the server."
-        });
-        return;
-    }
-
-    let body = "";
-
-    req.on("data", chunk => {
-        body += chunk;
-
-        // Prevent very large requests
-        if (body.length > 1000000) {
-            req.destroy();
-        }
-    });
-
-    req.on("end", async () => {
-
-        try {
-
-            let data;
+        req.on("end", async () => {
 
             try {
-                data = JSON.parse(body);
-            } catch (error) {
-                sendJson(res, 400, {
-                    error: "Invalid JSON request."
-                });
-                return;
-            }
 
-            const message = String(data.message || "").trim();
+                // -----------------------------------------
+                // Parse request
+                // -----------------------------------------
 
-            if (!message) {
-                sendJson(res, 400, {
-                    error: "Message is required."
-                });
-                return;
-            }
+                let data;
 
-            const response = await ai.models.generateContent({
+                try {
+                    data = JSON.parse(body);
+                } catch (error) {
 
-                model: GEMINI_MODEL,
+                    sendJson(res, 400, {
+                        error: "Invalid JSON request."
+                    });
 
-                contents: `
-You are LIFEOS, an intelligent personal life planner.
+                    return;
+                }
+
+                // -----------------------------------------
+                // Get message
+                // -----------------------------------------
+
+                const message = String(
+                    data.message || ""
+                ).trim();
+
+                if (!message) {
+
+                    sendJson(res, 400, {
+                        error: "Message is required."
+                    });
+
+                    return;
+                }
+
+                console.log("LIFEOS AI REQUEST:");
+                console.log(message);
+
+                // -----------------------------------------
+                // Ask Gemini
+                // -----------------------------------------
+
+                const response = await ai.models.generateContent({
+
+                    model: GEMINI_MODEL,
+
+                    contents: `
+You are LIFEOS, an intelligent personal life operating system.
+
+Your job is to help the user organize their life.
 
 The user says:
 
 ${message}
 
-Create a practical plan based on the user's request.
+Create a practical, realistic plan.
 
-Return ONLY valid JSON with this exact structure:
+Return ONLY valid JSON.
+
+Use this exact structure:
 
 {
-  "title": "Plan title",
-  "summary": "Short summary",
-  "tasks": [
-    {
-      "title": "Task title",
-      "description": "Short description",
-      "priority": "HIGH",
-      "date": "2026-09-01",
-      "time": "16:00"
-    }
-  ],
-  "goals": [
-    {
-      "title": "Goal title",
-      "description": "Short description",
-      "progress": 0
-    }
-  ]
+    "title": "Plan title",
+    "summary": "Short useful summary",
+    "tasks": [
+        {
+            "title": "Task title",
+            "description": "Short description",
+            "priority": "HIGH",
+            "date": "2026-09-02",
+            "time": "16:00"
+        }
+    ],
+    "goals": [
+        {
+            "title": "Goal title",
+            "description": "Short description",
+            "progress": 0
+        }
+    ]
 }
 
-Rules:
+RULES:
 
-- Create 3 to 8 useful tasks.
-- Create 1 to 3 goals.
-- Priority must be HIGH, MEDIUM, or LOW.
-- Progress must be a number from 0 to 100.
-- Every task must have a date in YYYY-MM-DD format.
-- Every task must have a time in HH:MM 24-hour format.
-- Schedule tasks logically.
-- Never schedule two tasks at the same time.
-- Do not use Markdown.
-- Return JSON only.
+1. Create 3 to 8 useful tasks.
+2. Create 1 to 3 goals.
+3. Priority must be HIGH, MEDIUM, or LOW.
+4. Progress must be between 0 and 100.
+5. Every task needs a date.
+6. Every task needs a time.
+7. Use YYYY-MM-DD for dates.
+8. Use 24-hour HH:MM for times.
+9. Do not schedule two tasks at the same time.
+10. Make the schedule realistic.
+11. Do not use Markdown.
+12. Return JSON only.
 `,
 
-                config: {
+                    config: {
 
-                    responseMimeType: "application/json",
+                        responseMimeType: "application/json",
 
-                    responseSchema: {
+                        responseSchema: {
 
-                        type: "object",
+                            type: "object",
 
-                        properties: {
+                            properties: {
 
-                            title: {
-                                type: "string"
-                            },
+                                title: {
+                                    type: "string"
+                                },
 
-                            summary: {
-                                type: "string"
-                            },
+                                summary: {
+                                    type: "string"
+                                },
 
-                            tasks: {
+                                tasks: {
 
-                                type: "array",
+                                    type: "array",
 
-                                items: {
+                                    items: {
 
-                                    type: "object",
+                                        type: "object",
 
-                                    properties: {
+                                        properties: {
 
-                                        title: {
-                                            type: "string"
+                                            title: {
+                                                type: "string"
+                                            },
+
+                                            description: {
+                                                type: "string"
+                                            },
+
+                                            priority: {
+                                                type: "string",
+                                                enum: [
+                                                    "HIGH",
+                                                    "MEDIUM",
+                                                    "LOW"
+                                                ]
+                                            },
+
+                                            date: {
+                                                type: "string"
+                                            },
+
+                                            time: {
+                                                type: "string"
+                                            }
+
                                         },
 
-                                        description: {
-                                            type: "string"
+                                        required: [
+                                            "title",
+                                            "description",
+                                            "priority",
+                                            "date",
+                                            "time"
+                                        ]
+
+                                    }
+
+                                },
+
+                                goals: {
+
+                                    type: "array",
+
+                                    items: {
+
+                                        type: "object",
+
+                                        properties: {
+
+                                            title: {
+                                                type: "string"
+                                            },
+
+                                            description: {
+                                                type: "string"
+                                            },
+
+                                            progress: {
+                                                type: "number"
+                                            }
+
                                         },
 
-                                        priority: {
-                                            type: "string",
-                                            enum: [
-                                                "HIGH",
-                                                "MEDIUM",
-                                                "LOW"
-                                            ]
-                                        },
+                                        required: [
+                                            "title",
+                                            "description",
+                                            "progress"
+                                        ]
 
-                                        date: {
-                                            type: "string"
-                                        },
+                                    }
 
-                                        time: {
-                                            type: "string"
-                                        }
-
-                                    },
-
-                                    required: [
-                                        "title",
-                                        "description",
-                                        "priority",
-                                        "date",
-                                        "time"
-                                    ]
                                 }
+
                             },
 
-                            goals: {
+                            required: [
+                                "title",
+                                "summary",
+                                "tasks",
+                                "goals"
+                            ]
 
-                                type: "array",
+                        }
 
-                                items: {
-
-                                    type: "object",
-
-                                    properties: {
-
-                                        title: {
-                                            type: "string"
-                                        },
-
-                                        description: {
-                                            type: "string"
-                                        },
-
-                                        progress: {
-                                            type: "number"
-                                        }
-
-                                    },
-
-                                    required: [
-                                        "title",
-                                        "description",
-                                        "progress"
-                                    ]
-                                }
-                            }
-
-                        },
-
-                        required: [
-                            "title",
-                            "summary",
-                            "tasks",
-                            "goals"
-                        ]
                     }
-                }
-            });
 
-            let plan;
-
-            try {
-                plan = JSON.parse(response.text);
-            } catch (error) {
-
-                sendJson(res, 500, {
-                    error: "AI returned an invalid plan format."
                 });
 
-                return;
+                // -----------------------------------------
+                // Parse Gemini response
+                // -----------------------------------------
+
+                let plan;
+
+                try {
+
+                    plan = JSON.parse(response.text);
+
+                } catch (error) {
+
+                    console.error(
+                        "INVALID GEMINI RESPONSE:",
+                        response.text
+                    );
+
+                    sendJson(res, 500, {
+                        error: "Gemini returned invalid JSON."
+                    });
+
+                    return;
+                }
+
+                // -----------------------------------------
+                // Send result to LIFEOS
+                // -----------------------------------------
+
+                sendJson(res, 200, {
+                    success: true,
+                    plan: plan
+                });
+
+                console.log("LIFEOS AI RESPONSE SENT.");
+
+            } catch (error) {
+
+                console.error(
+                    "GEMINI ERROR:",
+                    error
+                );
+
+                sendJson(res, 500, {
+                    success: false,
+                    error:
+                        error.message ||
+                        "Gemini request failed."
+                });
             }
 
-            sendJson(res, 200, {
-                plan: plan
-            });
+        });
 
-        } catch (error) {
+        return;
+    }
 
-            console.error("GEMINI ERROR:", error);
+    // =================================================
+    // 404
+    // =================================================
 
-            sendJson(res, 500, {
-                error: error.message || "AI request failed."
-            });
-        }
-    });
-
-    req.on("error", error => {
-        console.error("REQUEST ERROR:", error);
+    sendJson(res, 404, {
+        error: "Not found",
+        path: req.url
     });
 
 });
 
+// =====================================================
+// START SERVER
+// =====================================================
+
 server.listen(PORT, "0.0.0.0", () => {
 
-    console.log(
-        `LIFEOS AI server running on port ${PORT}`
-    );
+    console.log("");
+    console.log("=================================");
+    console.log("       LIFEOS AI SERVER");
+    console.log("=================================");
+    console.log("Server running on port:", PORT);
+    console.log("Gemini model:", GEMINI_MODEL);
+    console.log("Gemini API configured:", GEMINI_API_KEY.length > 10);
+    console.log("AI endpoint: /ask");
+    console.log("Health endpoint: /health");
+    console.log("=================================");
+    console.log("");
 
 });
